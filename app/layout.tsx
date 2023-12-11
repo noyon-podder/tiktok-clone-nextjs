@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import AuthOverlay from "./components/AuthOverlay";
 
 export const metadata: Metadata = {
   title: "TikTok clone",
@@ -13,7 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AuthOverlay />
+        {children}
+      </body>
     </html>
   );
 }

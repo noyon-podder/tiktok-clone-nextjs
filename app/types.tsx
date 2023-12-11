@@ -28,6 +28,19 @@ export type PostWithProfile = {
   };
 };
 
+export type CommentWithProfile = {
+  id: string;
+  user_id: string;
+  post_id: string;
+  text: string;
+  created_at: string;
+  profile: {
+    user_id: string;
+    name: string;
+    image: string;
+  };
+};
+
 export type TLike = {
   id: string;
   user_id: string;
@@ -57,6 +70,21 @@ export type TUploadError = {
 /////////////////////////////////////////////////
 
 // component types
+
+export type TCommentHeaderComp = {
+  params: { userId: string; postId: string };
+  post: PostWithProfile;
+};
+
+export type TCommentComp = {
+  params: { userId: string; postId: string };
+};
+
+export type TSingleCommentComp = {
+  params: { userId: string; postId: string };
+  comment: CommentWithProfile;
+};
+
 export type TPostMain = {
   post: PostWithProfile;
 };
@@ -73,6 +101,9 @@ export type TProfilePage = {
   params: { id: string };
 };
 
+export type TPostPage = {
+  params: { userId: string; postId: string };
+};
 export type TTextInputComp = {
   string: string;
   placeholder: string;
