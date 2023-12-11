@@ -3,6 +3,18 @@ export type TRandomUser = {
   name: string;
   image: string;
 };
+
+export type TCropperDimensions = {
+  height: number | null;
+  width: number | null;
+  top: number | null;
+  left: number | null;
+};
+
+export type TShowErrorObject = {
+  type: string;
+  message: string;
+};
 export type PostWithProfile = {
   id: string;
   user_id: string;
@@ -59,6 +71,14 @@ export type TPostUserComp = {
 
 export type TProfilePage = {
   params: { id: string };
+};
+
+export type TTextInputComp = {
+  string: string;
+  placeholder: string;
+  error: string;
+  inputType: string;
+  onUpdate: (newValue: string) => void;
 };
 // layout includes
 export type TMenuItems = {
