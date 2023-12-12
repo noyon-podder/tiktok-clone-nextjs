@@ -1,3 +1,18 @@
+export type TUserContext = {
+  user: TUser | null;
+  register: (name: string, email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  checkUser: () => Promise<void>;
+};
+
+export type TUser = {
+  id: string;
+  name: string;
+  image: string;
+  bio: string;
+};
+
 export type TRandomUser = {
   id: string;
   name: string;

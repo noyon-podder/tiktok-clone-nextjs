@@ -5,7 +5,7 @@ import Register from "./auth/Register";
 import Login from "./auth/Login";
 
 const AuthOverlay = () => {
-  const [isRegister, setIsRegister] = useState<boolean>(false);
+  const [isRegister, setIsRegister] = useState<boolean>(true);
   return (
     <>
       <div
