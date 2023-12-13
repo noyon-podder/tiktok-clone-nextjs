@@ -1,3 +1,4 @@
+"use client";
 import { TCropperDimensions, TShowErrorObject } from "@/app/types";
 import { Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";

@@ -1,3 +1,17 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Hide scrollbar for WebKit browsers (Chrome, Safari) */
+body::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for Firefox */
+body {
+  scrollbar-width: 0px; /* "auto" or "thin" depending on your preference */
+}
+
+body::-webkit-scrollbar-track {
+  background-color: transparent; /* Set a transparent background to hide scrollbar track in WebKit */
+}
