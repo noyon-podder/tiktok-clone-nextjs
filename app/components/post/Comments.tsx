@@ -3,53 +3,33 @@ import { useState } from "react";
 import ClientOnly from "../ClientOnly";
 import SingleComment from "./SingleComment";
 import { BiLoaderCircle } from "react-icons/bi";
+import { useCommentStore } from "../stores/comment";
+import { useGeneralStore } from "../stores/general";
+import { useUser } from "@/app/context/user";
+import useCreateComment from "@/app/hooks/useCreateComment";
 
 const Comments = ({ params }: TCommentComp) => {
-  const commentsByPost = [
-    {
-      id: "01",
-      user_id: "456",
-      post_id: "/beach.mp4",
-      text: "this is text",
-      created_at: "date here",
-      profile: {
-        user_id: "456",
-        name: "Demo user",
-        image: "https://placehold.co/100",
-      },
-    },
-    {
-      id: "01",
-      user_id: "456",
-      post_id: "/beach.mp4",
-      text: "this is text",
-      created_at: "date here",
-      profile: {
-        user_id: "456",
-        name: "Demo user",
-        image: "https://placehold.co/100",
-      },
-    },
-    {
-      id: "01",
-      user_id: "456",
-      post_id: "/beach.mp4",
-      text: "this is text",
-      created_at: "date here",
-      profile: {
-        user_id: "456",
-        name: "Demo user",
-        image: "https://placehold.co/100",
-      },
-    },
-  ];
+  let { commentsByPost, setCommentsByPost } = useCommentStore();
+  let { setIsLoginOpen } = useGeneralStore();
 
+  const contextUser = useUser();
   const [comment, setComment] = useState<string>("");
   const [inputFocused, setInputFocused] = useState<boolean>(false);
   const [isUploading, setIsUploading] = useState<boolean>(false);
 
-  const addComment = () => {
-    console.log("comment will added");
+  const addComment = async () => {
+    if (!contextUser?.user) return setIsLoginOpen(true);
+
+    try {
+      setIsUploading(true);
+      await useCreateComment(contextUser?.user?.id, params?.postId, comment);
+      setCommentsByPost(params?.postId);
+      setComment("");
+      setIsUploading(false);
+    } catch (error) {
+      console.log(error);
+      alert(error);
+    }
   };
   return (
     <>

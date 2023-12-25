@@ -2,6 +2,7 @@ import React from "react";
 import { TMenuItemFollowComp } from "../../types";
 import Link from "next/link";
 import { AiOutlineCheck } from "react-icons/ai";
+import useCreateBucketUrl from "@/app/hooks/useCreateBucketUrl";
 
 const MenuItemFollow = ({ user }: TMenuItemFollowComp) => {
   return (
@@ -13,7 +14,7 @@ const MenuItemFollow = ({ user }: TMenuItemFollowComp) => {
         <img
           className="rounded-full lg:mx-0 mx-auto"
           width="35"
-          src={user?.image}
+          src={useCreateBucketUrl(user?.image)}
         />
         <div className="lg:pl-2.5 lg:block hidden">
           <div className="flex items-center">

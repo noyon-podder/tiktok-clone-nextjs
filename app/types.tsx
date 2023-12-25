@@ -13,6 +13,14 @@ export type TUser = {
   bio: string;
 };
 
+export type TProfile = {
+  id: string;
+  user_id: string;
+  name: string;
+  image: string;
+  bio: string;
+};
+
 export type TRandomUser = {
   id: string;
   name: string;

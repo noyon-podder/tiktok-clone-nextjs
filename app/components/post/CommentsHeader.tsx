@@ -1,25 +1,112 @@
 import { TCommentHeaderComp } from "@/app/types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AiFillHeart } from "react-icons/ai";
 import { BiLoaderCircle } from "react-icons/bi";
 import { BsChatDots, BsTrash3 } from "react-icons/bs";
 import { ImMusic } from "react-icons/im";
 import ClientOnly from "../ClientOnly";
+import { useLikeStore } from "../stores/like";
+import { useCommentStore } from "../stores/comment";
+import { useGeneralStore } from "../stores/general";
+import { useUser } from "@/app/context/user";
+import useIsLiked from "@/app/hooks/useIsLiked";
+import useCreateLike from "@/app/hooks/useCreateLike";
+import useDeleteLike from "@/app/hooks/useDeleteLike";
+import useDeletePostById from "@/app/hooks/useDeletePostById";
+import useCreateBucketUrl from "@/app/hooks/useCreateBucketUrl";
+import moment from "moment";
 
 const CommentsHeader = ({ post, params }: TCommentHeaderComp) => {
+  let { likesByPost, setLikesByPost } = useLikeStore();
+  let { commentsByPost, setCommentsByPost } = useCommentStore();
+  let { setIsLoginOpen } = useGeneralStore();
+
+  const contextUser = useUser();
   const router = useRouter();
   const [hasClickedLike, setHasClickedLike] = useState<boolean>(false);
   const [isDeleteing, setIsDeleteing] = useState<boolean>(false);
   const [userLiked, setUserLiked] = useState<boolean>(false);
 
-  const deletePost = () => {
-    console.log("this post is delete");
+  useEffect(() => {
+    setCommentsByPost(params?.postId);
+    setLikesByPost(params?.postId);
+  }, [post]);
+
+  useEffect(() => {
+    hasUserLikedPost();
+  }, [likesByPost]);
+
+  const hasUserLikedPost = () => {
+    if (likesByPost.length < 1 || !contextUser?.user?.id) {
+      setUserLiked(false);
+      return;
+    }
+    let res = useIsLiked(contextUser.user.id, params.postId, likesByPost);
+    setUserLiked(res ? true : false);
+  };
+
+  const like = async () => {
+    try {
+      setHasClickedLike(true);
+      await useCreateLike(contextUser?.user?.id || "", params.postId);
+      setLikesByPost(params.postId);
+      setHasClickedLike(false);
+    } catch (error) {
+      console.log(error);
+      alert(error);
+      setHasClickedLike(false);
+    }
+  };
+
+  const unlike = async (id: string) => {
+    try {
+      setHasClickedLike(true);
+      await useDeleteLike(id);
+      setLikesByPost(params.postId);
+      setHasClickedLike(false);
+    } catch (error) {
+      console.log(error);
+      alert(error);
+      setHasClickedLike(false);
+    }
   };
 
   const likeOrUnlike = () => {
-    console.log("like or unlike button");
+    if (!contextUser?.user) return setIsLoginOpen(true);
+
+    let res = useIsLiked(contextUser.user.id, params.postId, likesByPost);
+    if (!res) {
+      like();
+    } else {
+      likesByPost.forEach((like) => {
+        if (
+          contextUser?.user?.id &&
+          contextUser.user.id == like.user_id &&
+          like.post_id == params.postId
+        ) {
+          unlike(like.id);
+        }
+      });
+    }
+  };
+
+  const deletePost = async () => {
+    let res = confirm("Are you sure you want to delete this post?");
+    if (!res) return;
+
+    setIsDeleteing(true);
+
+    try {
+      await useDeletePostById(params?.postId, post?.video_url);
+      router.push(`/profile/${params.userId}`);
+      setIsDeleteing(false);
+    } catch (error) {
+      console.log(error);
+      setIsDeleteing(false);
+      alert(error);
+    }
   };
   return (
     <>
@@ -30,7 +117,7 @@ const CommentsHeader = ({ post, params }: TCommentHeaderComp) => {
               <img
                 className="rounded-full lg:mx-0 mx-auto"
                 width="40"
-                src={post?.profile.image}
+                src={useCreateBucketUrl(post?.profile.image)}
               />
             ) : (
               <div className="w-[40px] h-[40px] bg-gray-200 rounded-full"></div>
@@ -50,12 +137,14 @@ const CommentsHeader = ({ post, params }: TCommentHeaderComp) => {
               <span className="relative -top-[2px] text-[30px] pl-1 pr-0.5 ">
                 .
               </span>
-              <span className="font-medium">{post?.created_at}</span>
+              <span className="font-medium">
+                {moment(post?.created_at).calendar()}
+              </span>
             </div>
           </div>
         </div>
 
-        {true ? (
+        {contextUser?.user?.id == post?.user_id ? (
           <div>
             {isDeleteing ? (
               <BiLoaderCircle className="animate-spin" size="25" />
@@ -85,7 +174,7 @@ const CommentsHeader = ({ post, params }: TCommentHeaderComp) => {
             >
               {!hasClickedLike ? (
                 <AiFillHeart
-                  //   color={likesByPost.length > 0 && userLiked ? "#ff2626" : ""}
+                  color={likesByPost.length > 0 && userLiked ? "#ff2626" : ""}
                   size="25"
                 />
               ) : (
@@ -93,7 +182,7 @@ const CommentsHeader = ({ post, params }: TCommentHeaderComp) => {
               )}
             </button>
             <span className="text-xs pl-2 pr-4 text-gray-800 font-semibold">
-              123
+              {likesByPost?.length}
             </span>
           </div>
         </ClientOnly>
@@ -101,7 +190,9 @@ const CommentsHeader = ({ post, params }: TCommentHeaderComp) => {
           <div className="rounded-full bg-gray-200 p-2 cursor-pointer">
             <BsChatDots size={25} />
           </div>
-          <span className="text-xs pl-2 text-gray-800 font-semibold">123</span>
+          <span className="text-xs pl-2 text-gray-800 font-semibold">
+            {commentsByPost?.length}
+          </span>
         </div>
       </div>
     </>

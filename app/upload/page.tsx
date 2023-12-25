@@ -1,14 +1,18 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { TUploadError } from "../types";
+import React, { useEffect, useState } from "react";
 import UploadLayout from "../layouts/UploadLayout";
 import { BiLoaderCircle, BiSolidCloudUpload } from "react-icons/bi";
 import { AiOutlineCheckCircle } from "react-icons/ai";
 import { PiKnifeLight } from "react-icons/pi";
+import { useRouter } from "next/navigation";
+import { useUser } from "@/app/context/user";
 
-const UploadPage = () => {
+import useCreatePost from "../hooks/useCreatePost";
+import { TUploadError } from "../types";
+
+export default function Upload() {
+  const contextUser = useUser();
   const router = useRouter();
 
   let [fileDisplay, setFileDisplay] = useState<string>("");
@@ -17,21 +21,19 @@ const UploadPage = () => {
   let [error, setError] = useState<TUploadError | null>(null);
   let [isUploading, setIsUploading] = useState<boolean>(false);
 
+  useEffect(() => {
+    if (!contextUser?.user) router.push("/");
+  }, [contextUser]);
+
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
 
     if (files && files.length > 0) {
       const file = files[0];
       const fileUrl = URL.createObjectURL(file);
-
       setFileDisplay(fileUrl);
       setFile(file);
     }
-  };
-
-  const clearVideo = () => {
-    setFileDisplay("");
-    setFile(null);
   };
 
   const discard = () => {
@@ -40,9 +42,42 @@ const UploadPage = () => {
     setCaption("");
   };
 
-  const createNewPost = () => {
-    console.log("create new post");
+  const clearVideo = () => {
+    setFileDisplay("");
+    setFile(null);
   };
+
+  const validate = () => {
+    setError(null);
+    let isError = false;
+
+    if (!file) {
+      setError({ type: "File", message: "A video is required" });
+      isError = true;
+    } else if (!caption) {
+      setError({ type: "caption", message: "A caption is required" });
+      isError = true;
+    }
+    return isError;
+  };
+
+  const createNewPost = async () => {
+    let isError = validate();
+    if (isError) return;
+    if (!file || !contextUser?.user) return;
+    setIsUploading(true);
+
+    try {
+      await useCreatePost(file, contextUser?.user?.id, caption);
+      router.push(`/profile/${contextUser?.user?.id}`);
+      setIsUploading(false);
+    } catch (error) {
+      console.log(error);
+      setIsUploading(false);
+      alert(error);
+    }
+  };
+
   return (
     <>
       <UploadLayout>
@@ -57,26 +92,26 @@ const UploadPage = () => {
               <label
                 htmlFor="fileInput"
                 className="
-                    md:mx-0
-                    mx-auto
-                    mt-4
-                    mb-6
-                    flex 
-                    flex-col 
-                    items-center 
-                    justify-center 
-                    w-full 
-                    max-w-[260px] 
-                    h-[470px] 
-                    text-center 
-                    p-3 
-                    border-2 
-                    border-dashed 
-                    border-gray-300 
-                    rounded-lg 
-                    hover:bg-gray-100 
-                    cursor-pointer
-                "
+                                    md:mx-0
+                                    mx-auto
+                                    mt-4
+                                    mb-6
+                                    flex 
+                                    flex-col 
+                                    items-center 
+                                    justify-center 
+                                    w-full 
+                                    max-w-[260px] 
+                                    h-[470px] 
+                                    text-center 
+                                    p-3 
+                                    border-2 
+                                    border-dashed 
+                                    border-gray-300 
+                                    rounded-lg 
+                                    hover:bg-gray-100 
+                                    cursor-pointer
+                                "
               >
                 <BiSolidCloudUpload size="40" color="#b3b3b1" />
                 <p className="mt-4 text-[17px]">Select video to upload</p>
@@ -88,7 +123,6 @@ const UploadPage = () => {
                   Up to 30 minutes
                 </p>
                 <p className="mt-2 text-gray-400 text-[13px]">Less than 2 GB</p>
-
                 <label
                   htmlFor="fileInput"
                   className="px-2 py-1.5 mt-8 text-white text-[15px] w-[80%] bg-[#F02C56] rounded-sm cursor-pointer"
@@ -106,22 +140,22 @@ const UploadPage = () => {
             ) : (
               <div
                 className="
-              md:mx-0
-              mx-auto
-              mt-4
-              md:mb-12
-              mb-16
-              flex 
-              items-center 
-              justify-center 
-              w-full 
-              max-w-[260px] 
-              h-[540px] 
-              p-3 
-              rounded-2xl
-              cursor-pointer
-              relative
-          "
+                                    md:mx-0
+                                    mx-auto
+                                    mt-4
+                                    md:mb-12
+                                    mb-16
+                                    flex 
+                                    items-center 
+                                    justify-center 
+                                    w-full 
+                                    max-w-[260px] 
+                                    h-[540px] 
+                                    p-3 
+                                    rounded-2xl
+                                    cursor-pointer
+                                    relative
+                                "
               >
                 {isUploading ? (
                   <div className="absolute flex items-center justify-center z-20 bg-black h-full w-full rounded-[50px] bg-opacity-50">
@@ -135,6 +169,7 @@ const UploadPage = () => {
                     </div>
                   </div>
                 ) : null}
+
                 <img
                   className="absolute z-20 pointer-events-none"
                   src="/images/mobile-case.png"
@@ -156,7 +191,7 @@ const UploadPage = () => {
                   <div className="flex items-center truncate">
                     <AiOutlineCheckCircle size="16" className="min-w-[16px]" />
                     <p className="text-[11px] pl-1 truncate text-ellipsis">
-                      {file ? file.name : ""}
+                      {File.name}
                     </p>
                   </div>
                   <button
@@ -174,7 +209,6 @@ const UploadPage = () => {
                 <div>
                   <PiKnifeLight className="mr-4" size="20" />
                 </div>
-
                 <div>
                   <div className="text-semibold text-[15px] mb-1.5">
                     Divide videos and edit
@@ -185,7 +219,6 @@ const UploadPage = () => {
                     videos
                   </div>
                 </div>
-
                 <div className="flex justify-end max-w-[130px] w-full h-full text-center my-auto">
                   <button className="px-8 py-1.5 text-white text-[15px] bg-[#F02C56] rounded-sm">
                     Edit
@@ -214,6 +247,7 @@ const UploadPage = () => {
                   onChange={(event) => setCaption(event.target.value)}
                 />
               </div>
+
               <div className="flex gap-3">
                 <button
                   disabled={isUploading}
@@ -238,6 +272,7 @@ const UploadPage = () => {
                   )}
                 </button>
               </div>
+
               {error ? (
                 <div className="text-red-600 mt-4">{error.message}</div>
               ) : null}
@@ -247,6 +282,4 @@ const UploadPage = () => {
       </UploadLayout>
     </>
   );
-};
-
-export default UploadPage;
+}

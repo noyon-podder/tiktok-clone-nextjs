@@ -35,7 +35,7 @@ const AuthOverlay = () => {
               onClick={() => setIsRegister(!isRegister)}
               className="text-[14px] text-[#F02C56] font-semibold pl-1"
             >
-              <span>{!isRegister ? "Register" : "log in"}</span>
+              <span>{isRegister ? "Register" : "log in"}</span>
             </button>
           </div>
         </div>

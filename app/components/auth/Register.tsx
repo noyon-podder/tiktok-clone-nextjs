@@ -4,8 +4,11 @@ import { useState } from "react";
 import { BiLoaderCircle } from "react-icons/bi";
 import TextInput from "../profile/TextInput";
 import { useUser } from "@/app/context/user";
+import { useGeneralStore } from "../stores/general";
 
 const Register = () => {
+  let { setIsLoginOpen } = useGeneralStore();
+
   const contextUser = useUser();
   const router = useRouter();
 
@@ -64,7 +67,7 @@ const Register = () => {
       setLoading(true);
       await contextUser.register(name, email, password);
       setLoading(false);
-      // setIsLoginOpen(false);
+      setIsLoginOpen(false);
       router.refresh();
     } catch (error) {
       setLoading(false);

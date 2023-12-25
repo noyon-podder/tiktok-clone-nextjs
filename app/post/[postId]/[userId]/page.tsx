@@ -2,34 +2,45 @@
 import ClientOnly from "@/app/components/ClientOnly";
 import Comments from "@/app/components/post/Comments";
 import CommentsHeader from "@/app/components/post/CommentsHeader";
+import { useCommentStore } from "@/app/components/stores/comment";
+import { useLikeStore } from "@/app/components/stores/like";
+import { usePostStore } from "@/app/components/stores/post";
+import useCreateBucketUrl from "@/app/hooks/useCreateBucketUrl";
 import { TPostPage } from "@/app/types";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useEffect } from "react";
 import { AiOutlineClose } from "react-icons/ai";
 import { BiChevronDown, BiChevronUp } from "react-icons/bi";
 
 const PostPage = ({ params }: TPostPage) => {
+  let { postById, postsByUser, setPostById, setPostsByUser } = usePostStore();
+  let { setLikesByPost } = useLikeStore();
+  let { setCommentsByPost } = useCommentStore();
+
   const router = useRouter();
-  const postById = {
-    id: "01",
-    user_id: "456",
-    video_url: "/beach.mp4",
-    text: "this is text",
-    created_at: "date here",
-    profile: {
-      user_id: "456",
-      name: "Demo user",
-      image: "https://placehold.co/100",
-    },
-  };
+
+  useEffect(() => {
+    setPostById(params.postId);
+    setCommentsByPost(params.postId);
+    setLikesByPost(params.postId);
+    setPostsByUser(params.userId);
+  }, []);
 
   const loopThroughPostsUp = () => {
-    console.log("loop through chevron up");
+    postsByUser.forEach((post) => {
+      if (post.id > params.postId) {
+        router.push(`/post/${post.id}/${params.userId}`);
+      }
+    });
   };
 
   const loopThroughPostsDown = () => {
-    console.log("loop through chevron down");
+    postsByUser.forEach((post) => {
+      if (post.id < params.postId) {
+        router.push(`/post/${post.id}/${params.userId}`);
+      }
+    });
   };
   return (
     <div
@@ -69,7 +80,7 @@ const PostPage = ({ params }: TPostPage) => {
           {postById?.video_url ? (
             <video
               className="fixed object-cover w-full my-auto z-[0] h-screen"
-              src={postById?.video_url}
+              src={useCreateBucketUrl(postById?.video_url)}
             />
           ) : null}
 
@@ -81,7 +92,7 @@ const PostPage = ({ params }: TPostPage) => {
                 loop
                 muted
                 className="h-screen mx-auto"
-                src={postById?.video_url}
+                src={useCreateBucketUrl(postById?.video_url)}
               />
             ) : null}
           </div>

@@ -4,6 +4,7 @@ import { AiOutlineLoading3Quarters } from "react-icons/ai";
 import Link from "next/link";
 import { BiErrorCircle } from "react-icons/bi";
 import { SiSoundcharts } from "react-icons/si";
+import useCreateBucketUrl from "@/app/hooks/useCreateBucketUrl";
 
 const PostUser = ({ post }: TPostUserComp) => {
   useEffect(() => {
@@ -38,7 +39,7 @@ const PostUser = ({ post }: TPostUserComp) => {
               muted
               loop
               className="aspect-[3/4] object-cover rounded-md"
-              src={post.video_url}
+              src={useCreateBucketUrl(post.video_url)}
             />
           </Link>
         )}
