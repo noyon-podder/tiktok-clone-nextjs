@@ -1,27 +1,28 @@
 "use client";
 import { TCropperDimensions, TShowErrorObject } from "@/app/types";
+import { useEffect, useState } from "react";
 import { Cropper } from "react-advanced-cropper";
 import "react-advanced-cropper/dist/style.css";
-import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { AiOutlineClose } from "react-icons/ai";
+
 import { BsPencil } from "react-icons/bs";
-import TextInput from "./TextInput";
+import { AiOutlineClose } from "react-icons/ai";
+import { useUser } from "@/app/context/user";
+import { useRouter } from "next/navigation";
 import { BiLoaderCircle } from "react-icons/bi";
+
+import useUpdateProfile from "@/app/hooks/useUpdateProfile";
+import useChangeUserImage from "@/app/hooks/useChangeUserImage";
+import useUpdateProfileImage from "@/app/hooks/useUpdateProfileImage";
+import useCreateBucketUrl from "@/app/hooks/useCreateBucketUrl";
 import { useProfileStore } from "../stores/profile";
 import { useGeneralStore } from "../stores/general";
-import { useUser } from "@/app/context/user";
-import useUpdateProfile from "@/app/hooks/useUpdateProfile";
-import useUpdateProfileImage from "@/app/hooks/useUpdateProfileImage";
-import useChangeUserImage from "@/app/hooks/useChangeUserImage";
-import useCreateBucketUrl from "@/app/hooks/useCreateBucketUrl";
+import TextInput from "./TextInput";
 
-const EditProfileOverlay = () => {
+export default function EditProfileOverlay() {
   let { currentProfile, setCurrentProfile } = useProfileStore();
   let { setIsEditProfileOpen } = useGeneralStore();
 
   const contextUser = useUser();
-
   const router = useRouter();
 
   const [file, setFile] = useState<File | null>(null);
@@ -40,11 +41,11 @@ const EditProfileOverlay = () => {
   }, []);
 
   const getUploadedImage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const selectedFiles = event.target.files && event.target.files[0];
+    const selectedFile = event.target.files && event.target.files[0];
 
-    if (selectedFiles) {
-      setFile(selectedFiles);
-      setUploadedImage(URL.createObjectURL(selectedFiles));
+    if (selectedFile) {
+      setFile(selectedFile);
+      setUploadedImage(URL.createObjectURL(selectedFile));
     } else {
       setFile(null);
       setUploadedImage(null);
@@ -65,24 +66,6 @@ const EditProfileOverlay = () => {
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const validate = () => {
-    setError(null);
-    let isError = false;
-
-    if (!userName) {
-      setError({ type: "userName", message: "A Username is required" });
-      isError = true;
-    }
-    return isError;
-  };
-
-  const showError = (type: string) => {
-    if (error && Object.entries(error).length > 0 && error.type === type) {
-      return error.message;
-    }
-    return "";
   };
 
   const cropAndUpdateImage = async () => {
@@ -109,6 +92,24 @@ const EditProfileOverlay = () => {
     }
   };
 
+  const showError = (type: string) => {
+    if (error && Object.entries(error).length > 0 && error?.type == type) {
+      return error.message;
+    }
+    return "";
+  };
+
+  const validate = () => {
+    setError(null);
+    let isError = false;
+
+    if (!userName) {
+      setError({ type: "userName", message: "A Username is required" });
+      isError = true;
+    }
+    return isError;
+  };
+
   return (
     <>
       <div
@@ -116,8 +117,10 @@ const EditProfileOverlay = () => {
         className="fixed flex justify-center pt-14 md:pt-[105px] z-50 top-0 left-0 w-full h-full bg-black bg-opacity-50 overflow-auto"
       >
         <div
-          className={`relative bg-white w-full max-w-[700px] sm:h-[580px] h-[655px] mx-3 p-4 rounded-lg mb-10
-                        ${!uploadedImage ? "h-[655px]" : "h-[580px]"}`}
+          className={`
+                        relative bg-white w-full max-w-[700px] sm:h-[580px] h-[655px] mx-3 p-4 rounded-lg mb-10
+                        ${!uploadedImage ? "h-[655px]" : "h-[580px]"}
+                    `}
         >
           <div className="absolute flex items-center justify-between w-full p-5 left-0 top-0 border-b border-b-gray-300">
             <h1 className="text-[22px] font-medium">Edit profile</h1>
@@ -129,6 +132,7 @@ const EditProfileOverlay = () => {
               <AiOutlineClose size="25" />
             </button>
           </div>
+
           <div
             className={`h-[calc(500px-200px)] ${
               !uploadedImage ? "mt-16" : "mt-[58px]"
@@ -204,7 +208,8 @@ const EditProfileOverlay = () => {
                   <h3 className="font-semibold text-[15px] sm:mb-0 mb-1 text-gray-700 sm:w-[160px] sm:text-left text-center">
                     Bio
                   </h3>
-                  <div className="flex items-center justify-center sm:-mt-6 ">
+
+                  <div className="flex items-center justify-center sm:-mt-6">
                     <div className="sm:w-[60%] w-full max-w-md">
                       <textarea
                         cols={30}
@@ -213,17 +218,17 @@ const EditProfileOverlay = () => {
                         value={userBio || ""}
                         maxLength={80}
                         className="
-                            resize-none
-                            w-full
-                            bg-[#F1F1F2]
-                            text-gray-800
-                            border
-                            border-gray-300
-                            rounded-md
-                            py-2.5
-                            px-3
-                            focus:outline-none
-                        "
+                                                    resize-none
+                                                    w-full
+                                                    bg-[#F1F1F2]
+                                                    text-gray-800
+                                                    border
+                                                    border-gray-300
+                                                    rounded-md
+                                                    py-2.5
+                                                    px-3
+                                                    focus:outline-none
+                                                "
                       ></textarea>
                       <p className="text-[11px] text-gray-500">
                         {userBio ? userBio.length : 0}/80
@@ -243,6 +248,7 @@ const EditProfileOverlay = () => {
               </div>
             )}
           </div>
+
           <div
             id="ButtonSection"
             className="absolute p-5 left-0 bottom-0 border-t border-t-gray-300 w-full"
@@ -311,6 +317,4 @@ const EditProfileOverlay = () => {
       </div>
     </>
   );
-};
-
-export default EditProfileOverlay;
+}
